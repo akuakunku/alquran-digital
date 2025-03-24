@@ -15,11 +15,9 @@
       "autoIncrement": true
     },
     "apk": {
-      "buildType": "apk",
       "distribution": "store"
     },
     "aab": {
-      "buildType": "aab",
       "distribution": "store"
     }
   },
