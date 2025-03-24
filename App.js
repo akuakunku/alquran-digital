@@ -57,7 +57,7 @@ function AppNavigator() {
           <Stack.Screen
             name="SurahDetail"
             component={SurahDetail}
-            options={{ title: "Detail Surah" }}
+            options={{ title: "Surah" }}
           />
           <Stack.Screen
             name="TafsirScreen"

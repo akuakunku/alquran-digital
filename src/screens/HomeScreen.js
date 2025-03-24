@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     backgroundColor: "#f5f5f5",
-    marginBottom:10,
+   
   },
   darkContainer: {
     backgroundColor: "#121212",

@@ -291,7 +291,7 @@ export default function SurahDetail() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#eef2f3" },
+  container: { flex: 1, backgroundColor: "#eef2f3" , padding: 10,},
   darkBg: { backgroundColor: "#1c1c1c" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 10, fontSize: 16, color: "#555" },
