@@ -1,0 +1,10 @@
+# Ignore build artifacts
+android/app/build/
+android/build/
+node_modules/
+*.log
+*.tmp
+
+# Ignore local environment files
+.env
+*.local
