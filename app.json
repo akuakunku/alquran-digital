@@ -4,25 +4,31 @@
     "slug": "alquran-digital",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/ic_quran_logo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/ic_quran_logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.chesko25.alqurandigital",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/ic_quran_logo.png",
+        "backgroundColor": "#000"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/ic_quran_logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6c7894d3-2984-4c41-a474-1fd0bf7f4454"
+      }
     }
   }
 }
