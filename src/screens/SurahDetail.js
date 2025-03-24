@@ -10,8 +10,8 @@ import {
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Audio } from "expo-av";
-import { getSurahDetail } from "../services/api"; 
-import { ThemeContext } from "../context/ThemeContext"; 
+import { getSurahDetail } from "../services/api";
+import { ThemeContext } from "../context/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SurahDetail() {
@@ -67,13 +67,14 @@ export default function SurahDetail() {
       }
 
       const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audioUrl }, 
+        { uri: audioUrl },
         { shouldPlay: true }
       );
-
-      setSound(newSound);
       setCurrentAyat(ayat);
       setBackgroundAyat(ayat);
+      setSound(newSound);
+
+      await newSound.playAsync();
 
       let audioStoppedByUser = false;
 
@@ -81,9 +82,11 @@ export default function SurahDetail() {
         if (status.didJustFinish) {
           if (!audioStoppedByUser) {
             if (currentAyat < surah.jumlahAyat) {
-              const nextAyat = surah.ayat.find(item => item.nomorAyat === ayat + 1);
+              const nextAyat = surah.ayat.find(
+                (item) => item.nomorAyat === ayat + 1
+              );
               if (nextAyat) {
-                await new Promise(resolve => setTimeout(resolve, 0)); 
+                await new Promise((resolve) => setTimeout(resolve, 0));
                 toggleAudio(nextAyat.audio["01"], nextAyat.nomorAyat);
                 scrollToAyat(nextAyat.nomorAyat);
               }
@@ -97,9 +100,9 @@ export default function SurahDetail() {
             }
           }
         } else if (status.isLoaded && status.isPlaying) {
-          setLoadingStates(prev => ({ ...prev, [ayat]: false }));
+          setLoadingStates((prev) => ({ ...prev, [ayat]: false }));
         } else {
-          setLoadingStates(prev => ({ ...prev, [ayat]: false }));
+          setLoadingStates((prev) => ({ ...prev, [ayat]: false }));
         }
       });
 
@@ -119,11 +122,11 @@ export default function SurahDetail() {
       };
     } catch (error) {
       console.error("Error handling audio:", error);
-      setLoadingStates(prev => ({ ...prev, [ayat]: false }));
+      setLoadingStates((prev) => ({ ...prev, [ayat]: false }));
     }
   }
   const scrollToAyat = (ayat) => {
-    const ayatPosition = (ayat - 1) * 140; 
+    const ayatPosition = (ayat - 1) * 100;
     scrollViewRef.current.scrollTo({ y: ayatPosition, animated: true });
   };
 
@@ -145,7 +148,10 @@ export default function SurahDetail() {
   if (loading) {
     return (
       <View style={[styles.loadingContainer, isDarkMode && styles.darkBg]}>
-        <ActivityIndicator size="large" color={isDarkMode ? "#FFD700" : "#007bff"} />
+        <ActivityIndicator
+          size="large"
+          color={isDarkMode ? "#FFD700" : "#007bff"}
+        />
         <Text style={[styles.loadingText, isDarkMode && styles.darkText]}>
           📖 Memuat Surah...
         </Text>
@@ -177,7 +183,11 @@ export default function SurahDetail() {
           {surah.suratSebelumnya ? (
             <TouchableOpacity
               style={[styles.navButton, isDarkMode && styles.darkButton]}
-              onPress={() => navigation.replace("SurahDetail", { nomor: surah.suratSebelumnya.nomor })}
+              onPress={() =>
+                navigation.replace("SurahDetail", {
+                  nomor: surah.suratSebelumnya.nomor,
+                })
+              }
             >
               <Text style={styles.navButtonText}>
                 ← {surah.suratSebelumnya.namaLatin}
@@ -190,7 +200,11 @@ export default function SurahDetail() {
           {surah.suratSelanjutnya ? (
             <TouchableOpacity
               style={[styles.navButton, isDarkMode && styles.darkButton]}
-              onPress={() => navigation.replace("SurahDetail", { nomor: surah.suratSelanjutnya.nomor })}
+              onPress={() =>
+                navigation.replace("SurahDetail", {
+                  nomor: surah.suratSelanjutnya.nomor,
+                })
+              }
             >
               <Text style={styles.navButtonText}>
                 {surah.suratSelanjutnya.namaLatin} →
@@ -221,10 +235,6 @@ export default function SurahDetail() {
               isDarkMode && styles.darkAyatContainer,
               backgroundAyat === item.nomorAyat ? styles.activeAyat : null,
             ]}
-            onLayout={(event) => {
-              const { height } = event.nativeEvent.layout;
-              item.height = height; 
-            }}
           >
             <Text style={[styles.ayatArabic, isDarkMode && styles.darkText]}>
               {item.teksArab}
@@ -232,7 +242,9 @@ export default function SurahDetail() {
             <Text style={[styles.ayatLatin, isDarkMode && styles.darkText]}>
               {item.teksLatin}
             </Text>
-            <Text style={[styles.ayatTranslation, isDarkMode && styles.darkText]}>
+            <Text
+              style={[styles.ayatTranslation, isDarkMode && styles.darkText]}
+            >
               {item.teksIndonesia}
             </Text>
 
