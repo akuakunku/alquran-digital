@@ -6,22 +6,40 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { ThemeContext } from "../context/ThemeContext";
-import { getSurahList } from "../services/api";
+import { getSurahList, saveSurahAudio } from "../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen() {
   const { isDarkMode } = useContext(ThemeContext);
   const [surahList, setSurahList] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
 
   const fetchSurahList = async () => {
     setRefreshing(true);
-    const data = await getSurahList();
-    setSurahList(data);
-    setRefreshing(false);
+    setError(null); 
+    try {
+      const cachedSurahList = await AsyncStorage.getItem("surahList");
+      if (cachedSurahList) {
+        setSurahList(JSON.parse(cachedSurahList));
+      }
+
+      const data = await getSurahList();
+      setSurahList(data);
+      await AsyncStorage.setItem("surahList", JSON.stringify(data));
+    } catch (error) {
+      setError("Could not fetch Surah list. Please check your network connection.");
+      console.error("Error fetching Surah list:", error);
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -34,34 +52,45 @@ export default function HomeScreen() {
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
-      <FlatList
-        data={surahList}
-        keyExtractor={(item) => item.nomor.toString()}
-        numColumns={2}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.card, isDarkMode && styles.darkCard]}
-            onPress={() =>
-              navigation.navigate("SurahDetail", { nomor: item.nomor })
-            }
-          >
-            <Text style={[styles.surahNumber, isDarkMode && styles.darkText]}>
-              {item.nomor}
-            </Text>
-            <Text style={[styles.surahLatin, isDarkMode && styles.darkText]}>
-              {item.namaLatin}
-            </Text>
-            <Text
-              style={[styles.surahArabic, isDarkMode && styles.darkSubText]}
-            >
-              {item.nama}
-            </Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#007bff" style={styles.loader} />
+      ) : error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>Please try again.</Text>
+          <TouchableOpacity style={styles.reloadButton} onPress={onRefresh}>
+            <Text style={styles.reloadButtonText}>Reload</Text>
           </TouchableOpacity>
-        )}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      />
+        </View>
+      ) : (
+        <FlatList
+          data={surahList}
+          keyExtractor={(item) => item.nomor.toString()}
+          numColumns={2}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[styles.card, isDarkMode && styles.darkCard]}
+              onPress={async () => {
+                await saveSurahAudio(item.nomor); 
+                navigation.navigate("SurahDetail", { nomor: item.nomor });
+              }}
+            >
+              <Text style={[styles.surahNumber, isDarkMode && styles.darkText]}>
+                {item.nomor}
+              </Text>
+              <Text style={[styles.surahLatin, isDarkMode && styles.darkText]}>
+                {item.namaLatin}
+              </Text>
+              <Text style={[styles.surahArabic, isDarkMode && styles.darkSubText]}>
+                {item.nama}
+              </Text>
+            </TouchableOpacity>
+          )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      )}
     </View>
   );
 }
@@ -113,5 +142,29 @@ const styles = StyleSheet.create({
   },
   darkSubText: {
     color: "#bbb",
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "red",
+    marginBottom: 10,
+  },
+  reloadButton: {
+    backgroundColor: "#007bff",
+    padding: 10,
+    borderRadius: 5,
+  },
+  reloadButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });

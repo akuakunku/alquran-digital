@@ -18,6 +18,7 @@ export default function AudioScreen() {
   const [surahName, setSurahName] = useState("");
   const [ayat, setAyat] = useState([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedQari, setSelectedQari] = useState("01");
 
   const route = useRoute();
@@ -64,6 +65,8 @@ export default function AudioScreen() {
   }, [nomor, selectedQari]);
 
   async function playAudio() {
+    setIsLoading(true);
+
     try {
       if (soundRef.current) {
         await soundRef.current.unloadAsync();
@@ -88,6 +91,8 @@ export default function AudioScreen() {
       }
     } catch (error) {
       console.error("Error playing audio:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -117,7 +122,6 @@ export default function AudioScreen() {
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkBg]}>
-   
       <View style={styles.dropdownContainer}>
         <Text style={[styles.dropdownLabel, isDarkMode && styles.darkText]}>
           Pilih Qari:
@@ -139,19 +143,22 @@ export default function AudioScreen() {
         />
       </View>
 
-      {/* Kontrol Audio */}
       <View style={styles.controlsContainer}>
         <TouchableOpacity
-          onPress={isPlaying ? pauseAudio : playAudio}
+          onPress={isLoading ? null : isPlaying ? pauseAudio : playAudio}
           style={[
             styles.button,
             { backgroundColor: isPlaying ? "#FFA500" : "#28a745" },
             isDarkMode && styles.darkButton,
           ]}
         >
-          <Text style={styles.buttonText}>
-            {isPlaying ? "⏸ Pause" : "▶ Play"}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>
+              {isPlaying ? "⏸ Pause" : "▶ Play"}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -170,7 +177,6 @@ export default function AudioScreen() {
         🎧 Sedang Memutar: {surahName}
       </Text>
 
-      {/* Daftar Ayat */}
       <ScrollView style={styles.scrollContainer}>
         {ayat.length > 0 ? (
           ayat.map((item, index) => (

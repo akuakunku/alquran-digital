@@ -1,11 +1,18 @@
 import React, { useEffect, useState, useContext } from "react";
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRoute } from "@react-navigation/native";
-import { ThemeContext } from "../context/ThemeContext"; // Import ThemeContext
+import { ThemeContext } from "../context/ThemeContext";
 import { getTafsir } from "../services/api";
 
 export default function TafsirScreen() {
-  const { isDarkMode } = useContext(ThemeContext); // Ambil status tema
+  const { isDarkMode } = useContext(ThemeContext);
   const [tafsir, setTafsir] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,21 +23,47 @@ export default function TafsirScreen() {
     async function fetchData() {
       try {
         setError(null);
+
         if (!ayat) {
           throw new Error("Nomor ayat tidak ditemukan.");
         }
+        const cachedData = await AsyncStorage.getItem(
+          `tafsir_${nomor}_${ayat}`
+        );
+        const now = new Date().getTime();
 
-        const tafsirData = await getTafsir(nomor);
-        if (!tafsirData || tafsirData.length === 0) {
-          throw new Error("Tafsir tidak tersedia atau format tidak sesuai");
+        let tafsirAyat;
+
+        if (cachedData) {
+          const { data, timestamp } = JSON.parse(cachedData);
+
+          const CACHE_EXPIRY = 12 * 60 * 60 * 1000;
+          if (now - timestamp < CACHE_EXPIRY) {
+            console.log(
+              `📦 Mengambil data dari cache: tafsir_${nomor}_${ayat}`
+            );
+            tafsirAyat = data;
+            setTafsir(tafsirAyat);
+          }
         }
-
-        const tafsirAyat = tafsirData.find((item) => item.ayat === ayat);
         if (!tafsirAyat) {
-          throw new Error(`Tafsir untuk ayat ${ayat} tidak ditemukan.`);
-        }
+          console.log(`🌍 Fetching data dari API: tafsir/${nomor}`);
+          const tafsirData = await getTafsir(nomor);
 
-        setTafsir(tafsirAyat);
+          if (!tafsirData || tafsirData.length === 0) {
+            throw new Error("Tafsir tidak tersedia atau format tidak sesuai");
+          }
+          tafsirAyat = tafsirData.find((item) => item.ayat === ayat);
+          if (!tafsirAyat) {
+            throw new Error(`Tafsir untuk ayat ${ayat} tidak ditemukan.`);
+          }
+          const cacheData = { data: tafsirAyat, timestamp: now };
+          await AsyncStorage.setItem(
+            `tafsir_${nomor}_${ayat}`,
+            JSON.stringify(cacheData)
+          );
+          setTafsir(tafsirAyat);
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -42,13 +75,22 @@ export default function TafsirScreen() {
   }, [nomor, ayat]);
 
   if (loading) {
-    return <ActivityIndicator size="large" color={isDarkMode ? "#FFD700" : "#0000ff"} />;
+    return (
+      <View style={[styles.container, isDarkMode && styles.darkContainer]}>
+        <ActivityIndicator
+          size="large"
+          color={isDarkMode ? "#FFD700" : "#0000ff"}
+        />
+      </View>
+    );
   }
 
   if (error) {
     return (
       <View style={[styles.container, isDarkMode && styles.darkContainer]}>
-        <Text style={[styles.errorText, isDarkMode && styles.darkText]}>Error: {error}</Text>
+        <Text style={[styles.errorText, isDarkMode && styles.darkText]}>
+          Error: {error}
+        </Text>
       </View>
     );
   }
@@ -70,7 +112,9 @@ export default function TafsirScreen() {
       </Text>
 
       <View style={styles.ayatContainer}>
-        <Text style={[styles.ayatTitle, isDarkMode && styles.darkText]}>Ayat {tafsir.ayat}</Text>
+        <Text style={[styles.ayatTitle, isDarkMode && styles.darkText]}>
+          Ayat {tafsir.ayat}
+        </Text>
         <Text style={[styles.ayatText, isDarkMode && styles.darkSubText]}>
           {tafsir.teks?.replace(/<\/?[^>]+(>|$)/g, "") || "Teks tidak tersedia"}
         </Text>
@@ -82,7 +126,7 @@ export default function TafsirScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 8,
     backgroundColor: "#f5f5f5",
   },
   darkContainer: {

@@ -11,12 +11,12 @@ async function fetchData(endpoint, cacheKey) {
       const now = new Date().getTime();
 
       if (now - timestamp < CACHE_EXPIRY) {
-       // console.log(`📦 Mengambil data dari cache: ${cacheKey}`);
+        console.log(`📦 Mengambil data dari cache: ${cacheKey}`);
         return data;
       }
     }
 
-   // console.log(`🌍 Fetching data dari API: ${endpoint}`);
+    console.log(`🌍 Fetching data dari API: ${endpoint}`);
     const response = await fetch(`${BASE_URL}/${endpoint}`);
 
     if (!response.ok) {
@@ -33,8 +33,9 @@ async function fetchData(endpoint, cacheKey) {
 
     return json.data;
   } catch (error) {
-  //  console.error(`❌ Error fetching ${endpoint}:`, error);
-    return null;
+    console.error(`❌ Error fetching ${endpoint}:`, error.message);
+
+    return null; 
   }
 }
 
@@ -56,6 +57,14 @@ export async function getSurahAudio(nomor) {
   return data?.audio || null;
 }
 
+export async function saveSurahAudio(nomor) {
+  const audioData = await getSurahAudio(nomor);
+  if (audioData) {
+    await AsyncStorage.setItem(`surahAudio_${nomor}`, JSON.stringify(audioData));
+  }
+}
+
+
 export const saveData = async (key, data) => {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(data));
@@ -67,7 +76,7 @@ export const saveData = async (key, data) => {
 export const getData = async (key) => {
   try {
     const data = await AsyncStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
+    return data ? JSON.parse(data) : null; 
   } catch (error) {
     console.error("Gagal mengambil data:", error);
     return null;
