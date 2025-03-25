@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Dimensions,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Audio } from "expo-av";
@@ -22,6 +23,7 @@ export default function SurahDetail() {
   const [loadingStates, setLoadingStates] = useState({});
   const [backgroundAyat, setBackgroundAyat] = useState(null);
   const scrollViewRef = useRef();
+  const ayatRefs = useRef({});
 
   const route = useRoute();
   const navigation = useNavigation();
@@ -70,64 +72,61 @@ export default function SurahDetail() {
         { uri: audioUrl },
         { shouldPlay: true }
       );
-      setCurrentAyat(ayat);
-      setBackgroundAyat(ayat);
+
+      // Pastikan state diperbarui sebelum lanjut
+      await new Promise((resolve) => {
+        setCurrentAyat(ayat);
+        setBackgroundAyat(ayat);
+        resolve();
+      });
+
       setSound(newSound);
-
       await newSound.playAsync();
-
-      let audioStoppedByUser = false;
+      scrollToAyat(ayat);
 
       newSound.setOnPlaybackStatusUpdate(async (status) => {
         if (status.didJustFinish) {
-          if (!audioStoppedByUser) {
-            if (currentAyat < surah.jumlahAyat) {
-              const nextAyat = surah.ayat.find(
-                (item) => item.nomorAyat === ayat + 1
-              );
-              if (nextAyat) {
-                await new Promise((resolve) => setTimeout(resolve, 0));
-                toggleAudio(nextAyat.audio["01"], nextAyat.nomorAyat);
-                scrollToAyat(nextAyat.nomorAyat);
-              }
-            } else {
-              await newSound.stopAsync();
-              await newSound.unloadAsync();
-              setSound(null);
-              setCurrentAyat(null);
-              setBackgroundAyat(null);
-              scrollViewRef.current.scrollTo({ y: 0, animated: true });
+          if (ayat < surah.jumlahAyat) {
+            const nextAyat = surah.ayat.find(
+              (item) => item.nomorAyat === ayat + 1
+            );
+            if (nextAyat) {
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              await toggleAudio(nextAyat.audio["05"], nextAyat.nomorAyat);
+              scrollToAyat(nextAyat.nomorAyat);
             }
-          }
-        } else if (status.isLoaded && status.isPlaying) {
-          setLoadingStates((prev) => ({ ...prev, [ayat]: false }));
-        } else {
-          setLoadingStates((prev) => ({ ...prev, [ayat]: false }));
-        }
-      });
-
-      newSound.stop = async () => {
-        audioStoppedByUser = true;
-        try {
-          if (newSound) {
+          } else {
             await newSound.stopAsync();
             await newSound.unloadAsync();
+            setSound(null);
+            setCurrentAyat(null);
+            setBackgroundAyat(null);
+            scrollViewRef.current.scrollTo({ y: 0, animated: true });
           }
-          setSound(null);
-          setCurrentAyat(null);
-          setBackgroundAyat(null);
-        } catch (error) {
-          console.error("Error stopping audio:", error);
         }
-      };
+      });
     } catch (error) {
       console.error("Error handling audio:", error);
+    } finally {
       setLoadingStates((prev) => ({ ...prev, [ayat]: false }));
     }
   }
+
   const scrollToAyat = (ayat) => {
-    const ayatPosition = (ayat - 1) * 200;
-    scrollViewRef.current.scrollTo({ y: ayatPosition, animated: true });
+    if (ayatRefs.current[ayat]) {
+      ayatRefs.current[ayat].measureLayout(
+        scrollViewRef.current,
+        (x, y, width, height) => {
+          const screenHeight = Dimensions.get("window").height;
+          const centerOffset = screenHeight / 2 - height / 2;
+
+          scrollViewRef.current.scrollTo({
+            y: y - centerOffset,
+            animated: true,
+          });
+        }
+      );
+    }
   };
 
   useEffect(() => {
@@ -230,6 +229,7 @@ export default function SurahDetail() {
         {surah.ayat?.map((item) => (
           <View
             key={item.nomorAyat}
+            ref={(ref) => (ayatRefs.current[item.nomorAyat] = ref)}
             style={[
               styles.ayatContainer,
               isDarkMode && styles.darkAyatContainer,
@@ -249,7 +249,7 @@ export default function SurahDetail() {
             </Text>
 
             <View style={styles.buttonRow}>
-              {item.audio?.["01"] && (
+              {item.audio?.["05"] && (
                 <TouchableOpacity
                   onPress={
                     currentAyat === item.nomorAyat
@@ -258,7 +258,7 @@ export default function SurahDetail() {
                             sound.stop();
                           }
                         }
-                      : () => toggleAudio(item.audio["01"], item.nomorAyat)
+                      : () => toggleAudio(item.audio["05"], item.nomorAyat)
                   }
                   style={[styles.playButton, isDarkMode && styles.darkButton]}
                 >
@@ -291,7 +291,7 @@ export default function SurahDetail() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#eef2f3" , padding: 10,},
+  container: { flex: 1, backgroundColor: "#eef2f3", padding: 10 },
   darkBg: { backgroundColor: "#1c1c1c" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 10, fontSize: 16, color: "#555" },
