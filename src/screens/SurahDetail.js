@@ -175,7 +175,7 @@ export default function SurahDetail() {
           style={styles.mainButton}
           onPress={() => navigation.navigate("AudioScreen", { nomor })}
         >
-          <Text style={styles.mainButtonText}>🎧 Dengarkan Murottal</Text>
+          <Text style={styles.mainButtonText}>🎧 Dengarkan Audio Murottal Full</Text>
         </TouchableOpacity>
 
         <View style={styles.navButtons}>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   mainButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  content: { padding: 20 },
+  content: { padding: 10 },
   surahTitle: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
   surahInfo: {
     fontSize: 16,
