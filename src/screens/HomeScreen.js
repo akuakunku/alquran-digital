@@ -7,6 +7,7 @@ import {
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
+  SafeAreaView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { ThemeContext } from "../context/ThemeContext";
@@ -23,7 +24,7 @@ export default function HomeScreen() {
 
   const fetchSurahList = async () => {
     setRefreshing(true);
-    setError(null); 
+    setError(null);
     try {
       const cachedSurahList = await AsyncStorage.getItem("surahList");
       if (cachedSurahList) {
@@ -34,7 +35,9 @@ export default function HomeScreen() {
       setSurahList(data);
       await AsyncStorage.setItem("surahList", JSON.stringify(data));
     } catch (error) {
-      setError("Could not fetch Surah list. Please check your network connection.");
+      setError(
+        "Could not fetch Surah list. Please check your network connection."
+      );
       console.error("Error fetching Surah list:", error);
     } finally {
       setRefreshing(false);
@@ -51,7 +54,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkContainer]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
       {loading ? (
         <ActivityIndicator size="large" color="#007bff" style={styles.loader} />
       ) : error ? (
@@ -71,7 +74,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={[styles.card, isDarkMode && styles.darkCard]}
               onPress={async () => {
-                await saveSurahAudio(item.nomor); 
+                await saveSurahAudio(item.nomor);
                 navigation.navigate("SurahDetail", { nomor: item.nomor });
               }}
             >
@@ -81,7 +84,9 @@ export default function HomeScreen() {
               <Text style={[styles.surahLatin, isDarkMode && styles.darkText]}>
                 {item.namaLatin}
               </Text>
-              <Text style={[styles.surahArabic, isDarkMode && styles.darkSubText]}>
+              <Text
+                style={[styles.surahArabic, isDarkMode && styles.darkSubText]}
+              >
                 {item.nama}
               </Text>
             </TouchableOpacity>
@@ -91,16 +96,14 @@ export default function HomeScreen() {
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
     backgroundColor: "#f5f5f5",
-   
   },
   darkContainer: {
     backgroundColor: "#121212",

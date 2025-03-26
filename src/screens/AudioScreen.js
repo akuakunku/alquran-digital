@@ -6,6 +6,7 @@ import {
   ScrollView,
   ActivityIndicator,
   StyleSheet,
+  SafeAreaView
 } from "react-native";
 import { Audio } from "expo-av";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -121,7 +122,7 @@ export default function AudioScreen() {
   }, [navigation]);
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkBg]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkBg]}>
       <View style={styles.dropdownContainer}>
         <Text style={[styles.dropdownLabel, isDarkMode && styles.darkText]}>
           Pilih Qari:
@@ -207,12 +208,12 @@ export default function AudioScreen() {
           />
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f9fa", padding: 16 },
+  container: { flex: 1, backgroundColor: "#f8f9fa", padding: 10 },
   darkBg: { backgroundColor: "#1c1c1c" },
   controlsContainer: {
     flexDirection: "row",

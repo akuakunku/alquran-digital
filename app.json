@@ -13,15 +13,44 @@
       "backgroundColor": "#000"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Aplikasi membutuhkan akses lokasi untuk menampilkan jadwal sholat di kota Anda secara otomatis.",
+        "NSUserNotificationUsageDescription": "Aplikasi memerlukan izin untuk mengirimkan notifikasi pengingat waktu sholat."
+      }
     },
     "android": {
       "package": "com.chesko25.alqurandigital",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED",
+        "FOREGROUND_SERVICE_LOCATION",
+        "FOREGROUND_SERVICE"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/quran_logo.png",
         "backgroundColor": "#000"
       }
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/quran_logo.png",
+          "color": "#000",
+          "sounds": []
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/quran_logo.png"
     },

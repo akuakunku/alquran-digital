@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  SafeAreaView, // Import SafeAreaView
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Audio } from "expo-av";
@@ -73,7 +74,6 @@ export default function SurahDetail() {
         { shouldPlay: true }
       );
 
-      // Pastikan state diperbarui sebelum lanjut
       await new Promise((resolve) => {
         setCurrentAyat(ayat);
         setBackgroundAyat(ayat);
@@ -169,7 +169,7 @@ export default function SurahDetail() {
   }
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkBg]}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.darkBg]}>
       <View style={[styles.header, isDarkMode && styles.darkHeader]}>
         <TouchableOpacity
           style={styles.mainButton}
@@ -253,9 +253,13 @@ export default function SurahDetail() {
                 <TouchableOpacity
                   onPress={
                     currentAyat === item.nomorAyat
-                      ? () => {
+                      ? async () => {
                           if (sound) {
-                            sound.stop();
+                            await sound.stopAsync();
+                            await sound.unloadAsync();
+                            setSound(null);
+                            setCurrentAyat(null);
+                            setBackgroundAyat(null);
                           }
                         }
                       : () => toggleAudio(item.audio["05"], item.nomorAyat)
@@ -286,12 +290,12 @@ export default function SurahDetail() {
           </View>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#eef2f3", padding: 10 },
+  container: { flex: 1, backgroundColor: "#eef2f3" },
   darkBg: { backgroundColor: "#1c1c1c" },
   loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   loadingText: { marginTop: 10, fontSize: 16, color: "#555" },
