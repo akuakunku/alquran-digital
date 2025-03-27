@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   darkAyatContainer: { backgroundColor: "#333" },
   activeAyat: { backgroundColor: "#007bff", marginBottom: 10 },
-  ayatArabic: { fontSize: 20, textAlign: "right", fontWeight: "bold" },
+  ayatArabic: { fontSize: 24, textAlign: "right", fontWeight: "bold" },
   ayatLatin: { fontSize: 14, fontStyle: "italic", marginTop: 4, color: "#555" },
   ayatTranslation: { fontSize: 13, marginTop: 4, color: "#444" },
   buttonRow: {

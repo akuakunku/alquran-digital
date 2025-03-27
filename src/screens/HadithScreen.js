@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView, // Importing SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { getBooks } from "../services/hadithapi";
 import { ThemeContext } from "../context/ThemeContext";
@@ -54,7 +54,7 @@ const HadithScreen = ({ navigation }) => {
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[styles.bookItem, isDarkMode && styles.darkBookItem]}
-                onPress={() => handleBookSelect(item.id, item.available)} // Pass available
+                onPress={() => handleBookSelect(item.id, item.available)}
               >
                 <Text style={[styles.bookText, isDarkMode && styles.darkText]}>
                   {item.name} (Total: {item.available})

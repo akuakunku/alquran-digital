@@ -66,7 +66,7 @@ const HadithDetailScreen = ({ route, navigation }) => {
     <SafeAreaView style={[styles.container, isDarkMode && styles.darkContainer]}>
       <ScrollView ref={scrollViewRef}>
         <Text style={[styles.title, isDarkMode && styles.darkText]}>
-          📖 Hadith dari Buku: {bookId}
+          📖 Hadith dari Buku: HR.{bookId}
         </Text>
         {loading ? (
           <ActivityIndicator size="large" color="#0000ff" />

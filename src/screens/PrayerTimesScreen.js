@@ -68,47 +68,43 @@ export default function PrayerTimesScreen() {
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Location permission is required to detect your location.");
-    } else {
-      setHasRequestedLocationPermission(true);  // Set state to indicate permission has been requested
+      setLocationError("Izin lokasi tidak diberikan.");
+      Alert.alert("Error", "Izin lokasi diperlukan untuk mendeteksi lokasi Anda.");
+      return false;
     }
+    return true;
   };
+
 
   // Detect user's current location
   const detectUserLocation = async () => {
+    const hasPermission = await requestLocationPermission();
+    if (!hasPermission) return;
+  
     setLoadingLocation(true);
     setLocationError(null);
-
+  
     try {
-      const { coords } = await Location.getCurrentPositionAsync({});
-      const geocode = await Location.reverseGeocodeAsync({
-        latitude: coords.latitude,
-        longitude: coords.longitude,
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
       });
-      const city = geocode[0]?.city || geocode[0]?.region || "Your Location";
+      console.log("User coordinates:", location.coords);
+  
+      const geocode = await Location.reverseGeocodeAsync(location.coords);
+      console.log("Geocode result:", geocode);
+  
+      if (geocode.length === 0) throw new Error("Lokasi tidak ditemukan.");
+      
+      const city = geocode[0]?.city || geocode[0]?.region || "Lokasi Tidak Diketahui";
       setUserLocation(city);
-
-      const foundCity = cities.find(
-        (c) => c.label.toLowerCase() === city.toLowerCase()
-      );
-      if (foundCity) {
-        setSelectedCity(foundCity.value);
-        fetchPrayerSchedule();
-      } else {
-        Alert.alert(
-          "City not found",
-          "Your detected city is not in the list of cities."
-        );
-      }
     } catch (error) {
       console.error("Error fetching location:", error);
-      setLocationError("Failed to detect location.");
+      setLocationError("Gagal mendeteksi lokasi. Pastikan GPS aktif dan coba lagi.");
     } finally {
       setLoadingLocation(false);
     }
   };
-
-  // Fetch and initialize cities and prayer times
+  
   useEffect(() => {
     const initializeData = async () => {
       try {
@@ -154,15 +150,14 @@ export default function PrayerTimesScreen() {
     };
 
     initializeData();
-  }, [hasRequestedLocationPermission]); // Dependency list includes hasRequestedLocationPermission
+  }, [hasRequestedLocationPermission]); 
 
-  // Fetch prayer schedule based on selected city
   async function fetchPrayerSchedule() {
     if (!selectedCity) {
       Alert.alert("Warning", "Please select a city first!");
       return;
     }
-
+  
     setLoadingPrayerTimes(true);
     try {
       const date = new Date();
@@ -171,12 +166,35 @@ export default function PrayerTimesScreen() {
         date.getFullYear(),
         date.getMonth() + 1
       );
+      
       const prayerToday = data[date.getDate() - 1];
-
-      if (prayerToday) {
-        setPrayerTimes(prayerToday);
+  
+      // If there are no prayer times for the selected city, try subregion
+      if (!prayerToday) {
+        Alert.alert("Info", "No schedule found for the selected city. Attempting to retrieve schedule for subregion.");
+        const subregion = geocode[0]?.subregion || null; // Use subregion from geocode
+  
+        if (subregion) {
+          const subregionData = await getPrayerTimes(
+            subregion, // Use subregion instead of city
+            date.getFullYear(),
+            date.getMonth() + 1
+          );
+  
+          const subregionPrayerToday = subregionData[date.getDate() - 1];
+  
+          // Handle the case where even the subregion fails
+          if (subregionPrayerToday) {
+            setPrayerTimes(subregionPrayerToday);
+          } else {
+            Alert.alert("Warning", "No schedule found for today in both selected city and subregion.");
+          }
+        } else {
+          Alert.alert("Warning", "Subregion information is not available.");
+        }
       } else {
-        Alert.alert("Warning", "No schedule found for today.");
+        // Found prayer times for the selected city
+        setPrayerTimes(prayerToday);
       }
     } catch (error) {
       console.error("Error fetching prayer schedule:", error);

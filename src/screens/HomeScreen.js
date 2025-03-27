@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   surahArabic: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#555",
     marginTop: 3,
   },

@@ -43,7 +43,7 @@ function CustomDrawerContent({ navigation }) {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? "#333" : "#fff" }}>
+    <View style={{ flex: 1, alignContent: "center", backgroundColor: isDarkMode ? "#333" : "#fff" }}>
       <TouchableOpacity
         onPress={toggleTheme}
         style={{
