@@ -2,7 +2,13 @@ import React, { useContext } from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { StatusBar, Text, TouchableOpacity, View, SafeAreaView } from "react-native";
+import {
+  StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
+  SafeAreaView,
+} from "react-native";
 
 import HomeScreen from "./src/screens/HomeScreen";
 import SurahDetail from "./src/screens/SurahDetail";
@@ -13,23 +19,27 @@ import DoaScreen from "./src/screens/DoaScreen";
 import { ThemeContext } from "./src/context/ThemeContext";
 import HadithScreen from "./src/screens/HadithScreen";
 import HadithDetailScreen from "./src/screens/HadithDetailScreen";
+import Calender from "./src/screens/Calender";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-function StackNavigator() {
+function MainStackNavigator() {
   return (
-    <Stack.Navigator screenOptions={{
-      headerShown: false,
-      cardStyle: { backgroundColor: 'transparent' },
-      gestureEnabled: false,
-    }}>
-      <Stack.Screen name="MainHome" component={HomeScreen} />
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: "transparent" },
+        gestureEnabled: false,
+      }}
+    >
+      <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="SurahDetail" component={SurahDetail} />
       <Stack.Screen name="TafsirScreen" component={TafsirScreen} />
       <Stack.Screen name="AudioScreen" component={AudioScreen} />
       <Stack.Screen name="DoaScreen" component={DoaScreen} />
       <Stack.Screen name="HadithScreen" component={HadithScreen} />
+      <Stack.Screen name="Calender" component={Calender} />
       <Stack.Screen
         name="HadithDetailScreen"
         component={HadithDetailScreen}
@@ -43,7 +53,13 @@ function CustomDrawerContent({ navigation }) {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
 
   return (
-    <View style={{ flex: 1, alignContent: "center", backgroundColor: isDarkMode ? "#333" : "#fff" }}>
+    <View
+      style={{
+        flex: 1,
+        alignContent: "center",
+        backgroundColor: isDarkMode ? "#333" : "#fff",
+      }}
+    >
       <TouchableOpacity
         onPress={toggleTheme}
         style={{
@@ -58,7 +74,7 @@ function CustomDrawerContent({ navigation }) {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("MainHome")}>
+      <TouchableOpacity onPress={() => navigation.navigate("HomeStack")}>
         <Text
           style={{
             fontSize: 18,
@@ -92,9 +108,7 @@ function CustomDrawerContent({ navigation }) {
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() =>
-          navigation.navigate("HadithStack", { screen: "HadithScreen" })
-        }
+        onPress={() => navigation.navigate("HadithStack")}
       >
         <Text
           style={{
@@ -104,6 +118,17 @@ function CustomDrawerContent({ navigation }) {
           }}
         >
           📜 Hadith
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Calender")}>
+        <Text
+          style={{
+            fontSize: 18,
+            padding: 15,
+            color: isDarkMode ? "#fff" : "#000",
+          }}
+        >
+          📅 Kalender
         </Text>
       </TouchableOpacity>
     </View>
@@ -140,8 +165,8 @@ export default function AppNavigator() {
           }}
         >
           <Drawer.Screen
-            name="MainHome"
-            component={StackNavigator}
+            name="HomeStack"
+            component={MainStackNavigator}
             options={{ title: "Al-Quran Digital" }}
           />
           <Drawer.Screen
@@ -158,6 +183,11 @@ export default function AppNavigator() {
             name="HadithStack"
             component={HadithStackNavigator}
             options={{ title: "Hadith" }}
+          />
+          <Drawer.Screen
+            name="Calender"
+            component={Calender}
+            options={{ title: "Kalender" }}
           />
         </Drawer.Navigator>
       </NavigationContainer>

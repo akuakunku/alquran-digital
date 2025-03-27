@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
-  SafeAreaView, // Import SafeAreaView
+  SafeAreaView, 
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Audio } from "expo-av";

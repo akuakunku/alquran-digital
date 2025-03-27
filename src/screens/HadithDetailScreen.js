@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Modal,
-  SafeAreaView, // Import SafeAreaView
+  SafeAreaView,
 } from "react-native";
 import { getHadithRange } from "../services/hadithapi";
 import { ThemeContext } from "../context/ThemeContext";
@@ -16,36 +16,38 @@ const HadithDetailScreen = ({ route, navigation }) => {
   const { bookId } = route.params;
   const { isDarkMode } = useContext(ThemeContext);
   const [hadiths, setHadiths] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
   const [error, setError] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedHadith, setSelectedHadith] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
 
-  const scrollViewRef = React.useRef(); 
+  const scrollViewRef = React.useRef();
+
+  // Function to fetch hadiths
+  const fetchHadiths = async (page) => {
+    try {
+      setLoading(true);
+      console.log(`Fetching hadiths for book: ${bookId} (Page: ${page})`);
+      const offset = (page - 1) * itemsPerPage;
+      const fetchedHadiths = await getHadithRange(bookId, `${offset + 1}-${offset + itemsPerPage}`);
+      if (fetchedHadiths.hadiths) {
+        setHadiths(fetchedHadiths.hadiths);
+      } else {
+        throw new Error("Hadith tidak ditemukan.");
+      }
+      setError("");
+    } catch (err) {
+      console.error(`Error fetching hadith for ${bookId}:`, err.message);
+      setError(`Gagal mengambil hadith: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchHadiths = async () => {
-      try {
-        console.log(`Fetching hadiths for book: ${bookId} (Page: ${currentPage})`);
-        const offset = (currentPage - 1) * itemsPerPage;
-        const fetchedHadiths = await getHadithRange(bookId, `${offset + 1}-${offset + itemsPerPage}`);
-        if (fetchedHadiths.hadiths) {
-          setHadiths(fetchedHadiths.hadiths);
-        } else {
-          throw new Error("Hadith tidak ditemukan.");
-        }
-        setError("");
-      } catch (err) {
-        console.error(`Error fetching hadith for ${bookId}:`, err.message);
-        setError(`Gagal mengambil hadith: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHadiths();
+    fetchHadiths(currentPage);
   }, [bookId, currentPage]);
 
   const handleGetSpecificHadith = (hadith) => {
@@ -56,6 +58,10 @@ const HadithDetailScreen = ({ route, navigation }) => {
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedHadith(null);
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage); 
   };
 
   useEffect(() => {
@@ -100,13 +106,13 @@ const HadithDetailScreen = ({ route, navigation }) => {
         <View style={styles.pagination}>
           <Button
             title="⬅ Previous"
-            onPress={() => currentPage > 1 && setCurrentPage(prevPage => prevPage - 1)}
-            disabled={currentPage === 1}
+            onPress={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1 || loading} 
           />
           <Button
             title="Next ➡"
-            onPress={() => hadiths.length === itemsPerPage && setCurrentPage(prevPage => prevPage + 1)}
-            disabled={hadiths.length < itemsPerPage}
+            onPress={() => hadiths.length === itemsPerPage && handlePageChange(currentPage + 1)}
+            disabled={hadiths.length < itemsPerPage || loading} 
           />
         </View>
         <Button title="⬅ Kembali" onPress={() => navigation.goBack()} />
@@ -166,13 +172,14 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   darkModal: { backgroundColor: "#00000080" }, 
   modalContent: {
-    width: "90%",
-    height:"90%",
+    width: "80%",
+    height: "80%",
     padding: 20,
     backgroundColor: "white",
     borderRadius: 10,
+    borderWidth: 2,
   },
-  darkModalContent: { backgroundColor: "#222" },
+  darkModalContent: { backgroundColor: "#222", borderColor: "#ffff" },
   modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10 },
   modalText: { fontSize: 16, marginBottom: 10 },
   pagination: {
