@@ -28,6 +28,7 @@ const lightTheme = {
   tableRowOdd: "#f9f9f9",
   holidayText: "#d32f2f",
   specialDayText: "#007AFF",
+  infoText: "#4CAF50",
 };
 
 const darkTheme = {
@@ -42,6 +43,7 @@ const darkTheme = {
   tableRowOdd: "#1E1E1E",
   holidayText: "#f44336",
   specialDayText: "#007AFF",
+  infoText: "#81C784",
 };
 
 // Constants
@@ -88,6 +90,7 @@ const Calendar = () => {
   const [specialDays, setSpecialDays] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [calculationMethod, setCalculationMethod] = useState("DIYANET");
 
   const fetchHijriCalendar = async () => {
     setLoading(true);
@@ -104,9 +107,14 @@ const Calendar = () => {
         setSpecialDays(specialDaysData.data || []);
       }
   
-      // Gunakan parameter khusus untuk Indonesia
+      // parameter khusus untuk Indonesia
       const response = await fetch(
-        `https://api.aladhan.com/v1/gToHCalendar/${month}/${year}?calendarMethod=HJCoSA&timezone=Asia/Jakarta&latitude=-6.2088&longitude=106.8456`
+        `https://api.aladhan.com/v1/gToHCalendar/${month}/${year}?` +
+        `calendarMethod=${calculationMethod}` +
+        `&timezone=Asia/Jakarta` +
+        `&latitude=-6.2088` +
+        `&longitude=106.8456` +
+        `&method=2` // Method 2 = Wujudul Hilal
       );
       
       if (!response.ok) {
@@ -137,10 +145,9 @@ const Calendar = () => {
     "Hari",
     "Gregorian",
     "Hijriah",
-    "Hari Penting",
-    "Hari Khusus",
+    "Hari Khusus"
   ];
-  const widthArr = [60, 60, 120, 120, 150, 150];
+  const widthArr = [70, 70, 150, 150, 200];
 
   const tableData = calendarData.map((item) => {
     const gregDate = new Date(item.gregorian.date);
@@ -148,12 +155,6 @@ const Calendar = () => {
     const hijriMonthName = hijriMonths[parseInt(item.hijri.month.number) - 1];
     const hijriMonthNum = parseInt(item.hijri.month.number);
     const hijriDay = parseInt(item.hijri.day);
-
-    // Ambil data hari penting jika ada
-    const holidays = item.hijri.holidays || [];
-    const adjustedHolidays = item.hijri.adjustedHolidays || [];
-    const allHolidays = [...holidays, ...adjustedHolidays];
-    const holidayText = allHolidays.join(", ") || "-";
 
     // Ambil data hari khusus
     const specialDayName = getSpecialDayName(hijriMonthNum, hijriDay);
@@ -164,7 +165,6 @@ const Calendar = () => {
       dayOfWeek,
       `${item.gregorian.day} ${months[month - 1].label}`,
       `${item.hijri.day} ${hijriMonthName}`,
-      holidayText,
       specialDayText,
     ];
   });
@@ -173,6 +173,36 @@ const Calendar = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <Text style={styles.title}>Kalender Gregorian ke Hijri</Text>
+
+        <View style={styles.pickerWrapper}>
+          <Text style={styles.label}>Metode Perhitungan</Text>
+          <View
+            style={[
+              styles.pickerContainer,
+              { backgroundColor: theme.inputBackground },
+            ]}
+          >
+            <Picker
+              selectedValue={calculationMethod}
+              style={[
+                styles.picker,
+                {
+                  color: theme.text,
+                  width: Platform.OS === "ios" ? "100%" : undefined,
+                },
+              ]}
+              dropdownIconColor={theme.text}
+              mode="dropdown"
+              onValueChange={setCalculationMethod}
+              theme={isDarkMode ? "dark" : "light"}
+            >
+              <Picker.Item label="Diyanet (Rekomendasi)" value="DIYANET" />
+              <Picker.Item label="HJCoSA (Arab Saudi)" value="HJCoSA" />
+              <Picker.Item label="Umm al-Qura" value="UAQ" />
+              <Picker.Item label="Matematis" value="MATHEMATICAL" />
+            </Picker>
+          </View>
+        </View>
 
         <View style={styles.pickerWrapper}>
           <Text style={styles.label}>Pilih Bulan</Text>
@@ -261,6 +291,11 @@ const Calendar = () => {
               <Text style={styles.monthYearText}>
                 {months[month - 1].label} {year}
               </Text>
+              <Text style={[styles.infoText, { marginBottom: 8 }]}>
+                Menggunakan metode: {calculationMethod === "DIYANET" ? "Diyanet (Rekomendasi Indonesia)" : 
+                                  calculationMethod === "HJCoSA" ? "HJCoSA (Arab Saudi)" :
+                                  calculationMethod === "UAQ" ? "Umm al-Qura" : "Matematis"}
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -313,12 +348,7 @@ const Calendar = () => {
                       }}
                       textStyle={[
                         styles.rowText,
-                        // Warna khusus untuk kolom hari penting
                         rowData[4] !== "-"
-                          ? { color: theme.holidayText }
-                          : null,
-                        // Warna khusus untuk kolom hari khusus
-                        rowData[5] !== "-"
                           ? { color: theme.specialDayText }
                           : null,
                       ]}
@@ -401,6 +431,11 @@ const getStyles = (theme) =>
       fontSize: 18,
       fontWeight: "bold",
       color: theme.text,
+    },
+    infoText: {
+      fontSize: 14,
+      color: theme.infoText,
+      textAlign: "center",
     },
     tableBorder: {
       borderWidth: 1,
