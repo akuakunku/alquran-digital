@@ -169,21 +169,19 @@ export default function PrayerTimesScreen() {
       
       const prayerToday = data[date.getDate() - 1];
   
-      // If there are no prayer times for the selected city, try subregion
       if (!prayerToday) {
         Alert.alert("Info", "No schedule found for the selected city. Attempting to retrieve schedule for subregion.");
-        const subregion = geocode[0]?.subregion || null; // Use subregion from geocode
+        const subregion = geocode[0]?.subregion || null;
   
         if (subregion) {
           const subregionData = await getPrayerTimes(
-            subregion, // Use subregion instead of city
+            subregion, 
             date.getFullYear(),
             date.getMonth() + 1
           );
   
           const subregionPrayerToday = subregionData[date.getDate() - 1];
   
-          // Handle the case where even the subregion fails
           if (subregionPrayerToday) {
             setPrayerTimes(subregionPrayerToday);
           } else {
@@ -193,7 +191,6 @@ export default function PrayerTimesScreen() {
           Alert.alert("Warning", "Subregion information is not available.");
         }
       } else {
-        // Found prayer times for the selected city
         setPrayerTimes(prayerToday);
       }
     } catch (error) {
@@ -207,7 +204,7 @@ export default function PrayerTimesScreen() {
     }
   }
 
-  // Function to render prayer times
+
   const renderPrayerTimes = () => {
     if (!prayerTimes) return null;
 
