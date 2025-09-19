@@ -25,7 +25,6 @@ const HadithDetailScreen = ({ route, navigation }) => {
 
   const scrollViewRef = React.useRef();
 
-  // Function to fetch hadiths
   const fetchHadiths = async (page) => {
     try {
       setLoading(true);

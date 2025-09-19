@@ -64,7 +64,6 @@ export default function PrayerTimesScreen() {
     } ${date.getFullYear()}`;
   };
 
-  // Request permission to access location
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
@@ -76,7 +75,6 @@ export default function PrayerTimesScreen() {
   };
 
 
-  // Detect user's current location
   const detectUserLocation = async () => {
     const hasPermission = await requestLocationPermission();
     if (!hasPermission) return;

@@ -67,12 +67,11 @@ export async function saveSurahAudio(nomor) {
   }
 }
 
-// Prayer Times API Functions
 export async function getCities() {
   const data = await fetchData("kota.json", "prayerCities", PRAYER_API_BASE);
   
   if (!Array.isArray(data)) {
-  //  console.error("❌ Data kota tidak valid:", data);
+  
     return [];
   }
 
@@ -86,7 +85,6 @@ export async function getCities() {
 
 export async function getPrayerTimes(cityId, year, month) {
   if (!cityId || !year || !month) {
- //   console.error("❌ cityId, year, dan month diperlukan!");
     return [];
   }
 
@@ -97,12 +95,10 @@ export async function getPrayerTimes(cityId, year, month) {
   return Array.isArray(data) ? data : [];
 }
 
-// Storage Functions
 export async function saveData(key, data) {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-  //  console.error("❌ Gagal menyimpan data:", error);
   }
 }
 
@@ -111,7 +107,6 @@ export async function getData(key) {
     const data = await AsyncStorage.getItem(key);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-  //  console.error("❌ Gagal mengambil data:", error);
     return null;
   }
 }
